@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en-us"><head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='1.修改注册表实现自启动2.DLL文件编写3.简单多线程服务器'><title>恶意代码分析实战-课堂练习题目202010</title>
+    
+    <link rel='canonical' href='https://worshipone.github.io/p/eydm-1/'>
+
+<link rel="stylesheet" href="/scss/style.min.css"><meta property='og:title' content='恶意代码分析实战-课堂练习题目202010'>
+<meta property='og:description' content='1.修改注册表实现自启动2.DLL文件编写3.简单多线程服务器'>
+<meta property='og:url' content='https://worshipone.github.io/p/eydm-1/'>
+<meta property='og:site_name' content='worshipone'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2020-10-20T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2020-10-20T00:00:00&#43;00:00'/><meta property='og:image' content='https://worshipone.github.io/p/eydm-1/luca-bravo-alS7ewQ41M8-unsplash.jpg' />
+<meta name="twitter:title" content="恶意代码分析实战-课堂练习题目202010">
+<meta name="twitter:description" content="1.修改注册表实现自启动2.DLL文件编写3.简单多线程服务器"><meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content='https://worshipone.github.io/p/eydm-1/luca-bravo-alS7ewQ41M8-unsplash.jpg' /></head><body class="">
+        <div class="container flex on-phone--column align-items--flex-start extended article-page with-toolbar">
+            <aside class="sidebar left-sidebar sticky">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header class="site-info">
+        
+            <figure class="site-avatar">
+                
+
+                
+                    
+                    <img src="/img/avatar_hu35ca434c0c08d3b25215778c592d1394_11415_300x300_resize_q75_box.jpg" width="300"
+                        height="300" class="site-logo" loading="lazy" alt="Avatar">
+                
+
+                <span class="emoji">🍥</span>
+            </figure>
+        
+        <h1 class="site-name"><a href="https://worshipone.github.io/">worshipone</a></h1>
+        <h2 class="site-description">If you want to fly histep, the horizon forget.</h2>
+    </header>
+
+    <ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='https://worshipone.github.io/'>
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='https://worshipone.github.io/about'>
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='https://worshipone.github.io/categories'>
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='https://worshipone.github.io/link'>
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='https://github.com/worshipone'>
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#9E9E9E" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+                
+                <span>github</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='mailto:worshipone@qq.com'>
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#9E9E9E" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <rect x="3" y="5" width="18" height="14" rx="2" />
+  <polyline points="3 7 12 13 21 7" />
+</svg>
+                
+                <span>mail</span>
+            </a>
+        </li>
+        
+    </ol>
+</aside>
+            <main class="main full-width">
+    <div id="article-toolbar">
+        <a href="https://worshipone.github.io/" class="back-home">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="15 6 9 12 15 18" />
+</svg>
+
+
+
+            <span>Back</span>
+        </a>
+    </div>
+
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <img srcset="/p/eydm-1/luca-bravo-alS7ewQ41M8-unsplash_hu0a3f1163de68d0b9471979ebf0ecf11e_32400_1024x0_resize_q75_box.jpg 1024w, /p/eydm-1/luca-bravo-alS7ewQ41M8-unsplash_hu0a3f1163de68d0b9471979ebf0ecf11e_32400_2000x0_resize_q75_box.jpg 2000w"
+                    src="/p/eydm-1/luca-bravo-alS7ewQ41M8-unsplash_hu0a3f1163de68d0b9471979ebf0ecf11e_32400_2000x0_resize_q75_box.jpg" width="1000" height="667" loading="lazy"
+                    alt="Featured image of post 恶意代码分析实战-课堂练习题目202010" />
+            
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="https://worshipone.github.io/categories/%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90/" 
+                    class="color-tag"
+                    data-image="/p/eydm-1/luca-bravo-alS7ewQ41M8-unsplash_hu0a3f1163de68d0b9471979ebf0ecf11e_32400_20x20_fill_q75_box_smart1.jpg" 
+                    data-key="eydm-1" 
+                    data-hash="md5-rC&#43;UhC7sa7h6Y66uIugvQQ==">
+                    恶意代码分析
+                </a>
+            
+        
+    </header>
+    
+
+    <h2 class="article-title">
+        <a href="https://worshipone.github.io/p/eydm-1/">恶意代码分析实战-课堂练习题目202010</a>
+    </h2>
+
+    
+    <h3 class="article-subtitle">
+        1.修改注册表实现自启动2.DLL文件编写3.简单多线程服务器
+    </h3>
+    <footer class="article-time">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+        <time class="article-time--published">Oct 20, 2020</time>
+    </footer></div>
+</header>
+
+    <section class="article-content">
+    <h4 id="1--通过修改注册表的方式实现自启动">1.  通过修改注册表的方式实现自启动</h4>
+<h5 id="11-实验要求">1.1 实验要求</h5>
+<p>编写代码，编辑注册表的Run/RunOnce/RunOnceEx键（任选其一，并明确三个键的区别），达到让某一程序在系统启动后自动运行的目的（可以以计算器、记事本等作为目标程序）。</p>
+<h5 id="12-实验环境">1.2 实验环境</h5>
+<p>Windows 7或Windows 10主机（虚拟机）；</p>
+<p>代码编辑器；</p>
+<p>C/C++代码运行所需环境。</p>
+<h5 id="13-实验目的">1.3 实验目的</h5>
+<p>了解恶意代码自启动常用手段。</p>
+<h5 id="14-实验过程">1.4 实验过程</h5>
+<h6 id="141-实验思路">1.4.1 实验思路</h6>
+<ol>
+<li>
+<p>打开注册表</p>
+<p>RegOpenKeyEx(HKEY_LOCAL_METHINE\SOFTWARE\Microsoft \Windows\CurrentVersion\Run)</p>
+</li>
+<li>
+<p>添加键值</p>
+<p>键值为要启动程序的路径(可通过GetModuleFileName获得程序路径)</p>
+</li>
+<li>
+<p>关闭注册表</p>
+<p>RegCloseKey</p>
+</li>
+</ol>
+<p><img src="https://i.loli.net/2020/10/20/W9NcZBdHqyzxUXR.png" alt=""  /></p>
+<h6 id="142-c语言代码">1.4.2 C语言代码</h6>
+<div class="highlight"><pre class="chroma"><code class="language-c++" data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;windows.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;cstdlib&gt;</span><span class="cp">
+</span><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">HKEY</span> <span class="n">hKey</span><span class="p">;</span>
+    <span class="n">LPCTSTR</span> <span class="n">lpRun</span> <span class="o">=</span> <span class="s">&#34;Software</span><span class="se">\\</span><span class="s">Microsoft</span><span class="se">\\</span><span class="s">Windows</span><span class="se">\\</span><span class="s">CurrentVersion</span><span class="se">\\</span><span class="s">Run&#34;</span><span class="p">;</span>
+    <span class="n">DWORD</span> <span class="n">state</span><span class="p">,</span><span class="n">dwtype</span><span class="p">,</span><span class="n">sizeBuff</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="n">lRet</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">reBuff</span><span class="p">[</span><span class="mi">100</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+
+
+    <span class="c1">//创建键
+</span><span class="c1"></span>    <span class="n">lRet</span> <span class="o">=</span> <span class="n">RegCreateKeyEx</span><span class="p">(</span><span class="n">HKEY_CURRENT_USER</span><span class="p">,</span><span class="n">lpRun</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="o">&amp;</span><span class="n">hKey</span><span class="p">,</span><span class="o">&amp;</span><span class="n">state</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">lRet</span> <span class="o">==</span> <span class="n">ERROR_SUCCESS</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">state</span> <span class="o">==</span> <span class="n">REG_CREATED_NEW_KEY</span><span class="p">)</span>
+            <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&#34;表项创建成功&#34;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+        <span class="n">RegCloseKey</span><span class="p">(</span><span class="n">hKey</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="c1">//创建或者修改键值
+</span><span class="c1"></span>    <span class="n">lRet</span><span class="o">=</span> <span class="n">RegOpenKeyEx</span><span class="p">(</span><span class="n">HKEY_CURRENT_USER</span><span class="p">,</span> <span class="n">lpRun</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">KEY_WRITE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">hKey</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">lRet</span> <span class="o">==</span> <span class="n">ERROR_SUCCESS</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">RegSetValueEx</span><span class="p">(</span><span class="n">hKey</span><span class="p">,</span> <span class="s">&#34;QQ&#34;</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">REG_SZ</span><span class="p">,(</span><span class="n">BYTE</span> <span class="o">*</span><span class="p">)</span><span class="s">&#34;D:</span><span class="se">\\</span><span class="s">QQ</span><span class="se">\\</span><span class="s">Bin</span><span class="se">\\</span><span class="s">QQScLauncher.exe&#34;</span><span class="p">,</span><span class="mi">100</span><span class="p">);</span>
+        <span class="n">RegCloseKey</span><span class="p">(</span><span class="n">hKey</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="c1">//读取键值
+</span><span class="c1"></span>    <span class="n">lRet</span><span class="o">=</span> <span class="n">RegOpenKeyEx</span><span class="p">(</span><span class="n">HKEY_CURRENT_USER</span><span class="p">,</span> <span class="n">lpRun</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">KEY_READ</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">hKey</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">lRet</span> <span class="o">==</span> <span class="n">ERROR_SUCCESS</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">sizeBuff</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">reBuff</span><span class="p">);</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">RegQueryValueEx</span><span class="p">(</span><span class="n">hKey</span><span class="p">,</span><span class="s">&#34;QQ&#34;</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">&amp;</span><span class="n">dwtype</span><span class="p">,(</span><span class="n">BYTE</span><span class="o">*</span><span class="p">)</span><span class="n">reBuff</span><span class="p">,</span><span class="o">&amp;</span><span class="n">sizeBuff</span><span class="p">)</span> <span class="o">==</span> <span class="n">ERROR_SUCCESS</span><span class="p">){</span>
+            <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&#34;读取QQ的键值&#34;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+            <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="n">reBuff</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">RegCloseKey</span><span class="p">(</span><span class="n">hKey</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">system</span><span class="p">(</span><span class="s">&#34;pause&#34;</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><h6 id="143-实验结果">1.4.3 实验结果</h6>
+<p>C++运行截图</p>
+<p><img src="https://i.loli.net/2020/10/20/chqfYomrJ839ZUM.png" alt=""  /></p>
+<p>注册表截图</p>
+<p><img src="https://i.loli.net/2020/10/20/Myxh8UlE43FqRmT.png" alt=""  /></p>
+<h4 id="2--dll文件编写">2.  DLL文件编写</h4>
+<h5 id="21-实验要求">2.1 实验要求</h5>
+<p>编写一个DLL，使得在动态加载该DLL时，能够弹出“目标DLL已加载”的对话框。同时，为DLL添加两个导出函数，分别实现读取文件并打印出来，以及写入文件的功能，并且能够被其他程序动态调用。</p>
+<h5 id="22-实验环境">2.2 实验环境</h5>
+<p>Windows 7或Windows 10主机（虚拟机）；</p>
+<p>代码编辑器；</p>
+<p>C/C++代码运行所需环境。</p>
+<h5 id="23-实验目的">2.3 实验目的</h5>
+<p>了解DLL的作用和调用其函数的方法。</p>
+<h5 id="24-实验过程">2.4 实验过程</h5>
+<h4 id="3--简单多线程服务器">3.  简单多线程服务器</h4>
+<h5 id="31-实验要求">3.1 实验要求</h5>
+<p>编写一个简单的echo服务器程序（即：客户端与服务器建立连接后，在客户端输入消息，服务器端就会打印输入的消息），在4444端口进行监听。每有一个客户端进行连接时候，服务器创建一个子线程，对客户端程序进行服务。根据要求，客户端代码也需要自行编写。</p>
+<h5 id="32-实验环境">3.2 实验环境</h5>
+<p>Windows 7或Windows 10主机（虚拟机）至少两台；</p>
+<p>代码编辑器；</p>
+<p>C/C++代码运行所需环境。</p>
+<h5 id="33-实验目的">3.3 实验目的</h5>
+<p>了解恶意代码在通信时，会使用到的最基本的技术。练习多线程编程。</p>
+<h5 id="34-实验过程">3.4 实验过程</h5>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    </footer>
+
+    
+</article>
+
+    <aside class="related-contents--wrapper">
+    
+    
+</aside>
+
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="worshipone/hugoBlogComments"
+        issue-term="pathname"
+        theme="preferred-color-scheme" 
+        
+        crossorigin="anonymous" 
+        async>
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">&copy; 2020 worshipone</section>
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="1.0.5">Stack</a></b> designed by
+        <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true" style="display:none">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+            </main>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"
+    integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g=" crossorigin="anonymous"></script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+<link rel="stylesheet" href="/css/highlight/light.min.css" media="(prefers-color-scheme: light)">
+<link rel="stylesheet" href="/css/highlight/dark.min.css" media="(prefers-color-scheme: dark)">
+
+    </body>
+</html>
