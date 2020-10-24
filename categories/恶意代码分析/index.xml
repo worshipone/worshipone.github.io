@@ -18,7 +18,7 @@
 代码编辑器；
 C/C++代码运行所需环境。
 1.3 实验目的 了解恶意代码自启动常用手段。
-1.4 实验过程 1.4.1 实验思路   打开注册表
+1.4 实验过程 1.4.1 实验原理   打开注册表
 RegOpenKeyEx(HKEY_LOCAL_METHINE\SOFTWARE\Microsoft \Windows\CurrentVersion\Run)
   添加键值
 键值为要启动程序的路径(可通过GetModuleFileName获得程序路径)

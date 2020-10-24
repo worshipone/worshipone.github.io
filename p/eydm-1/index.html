@@ -219,7 +219,7 @@
 <h5 id="13-实验目的">1.3 实验目的</h5>
 <p>了解恶意代码自启动常用手段。</p>
 <h5 id="14-实验过程">1.4 实验过程</h5>
-<h6 id="141-实验思路">1.4.1 实验思路</h6>
+<h6 id="141-实验原理">1.4.1 实验原理</h6>
 <ol>
 <li>
 <p>打开注册表</p>
@@ -280,9 +280,9 @@
 <span class="p">}</span>
 </code></pre></div><h6 id="143-实验结果">1.4.3 实验结果</h6>
 <p>C++运行截图</p>
-<p><img src="https://i.loli.net/2020/10/20/chqfYomrJ839ZUM.png" alt=""  /></p>
+<p><img src="https://raw.githubusercontent.com/worshipone/websiteImages/master/%E6%B3%A8%E5%86%8C%E8%A1%A803.png" alt=""  /></p>
 <p>注册表截图</p>
-<p><img src="https://i.loli.net/2020/10/20/Myxh8UlE43FqRmT.png" alt=""  /></p>
+<p><img src="https://raw.githubusercontent.com/worshipone/websiteImages/master/%E6%B3%A8%E5%86%8C%E8%A1%A802.png" alt=""  /></p>
 <h4 id="2--dll文件编写">2.  DLL文件编写</h4>
 <h5 id="21-实验要求">2.1 实验要求</h5>
 <p>编写一个DLL，使得在动态加载该DLL时，能够弹出“目标DLL已加载”的对话框。同时，为DLL添加两个导出函数，分别实现读取文件并打印出来，以及写入文件的功能，并且能够被其他程序动态调用。</p>
@@ -293,7 +293,170 @@
 <h5 id="23-实验目的">2.3 实验目的</h5>
 <p>了解DLL的作用和调用其函数的方法。</p>
 <h5 id="24-实验过程">2.4 实验过程</h5>
-<h4 id="3--简单多线程服务器">3.  简单多线程服务器</h4>
+<h6 id="241-实验原理">2.4.1 实验原理</h6>
+<p>动态链接库是使用库来在多个应用程序之间共享代码的Windows特有方式；
+一个DLL程序是不能独立运行的可执行文件，只能被EXE文件加载执行或者导出函数；
+区别于静态链接库.LIB，帮助软件开发者和恶意代码作者最小化发布软件的大小规模。</p>
+<h6 id="242--clion生成及使用dll">2.4.2  Clion生成及使用dll</h6>
+<p>写在前面：dll项目负责生成dll，dllDemo项目负责引用dll</p>
+<ol>
+<li>dll项目所在CMakeLists.txt</li>
+</ol>
+<div class="highlight"><pre class="chroma"><code class="language-c++" data-lang="c++"><span class="n">cmake_minimum_required</span><span class="p">(</span><span class="n">VERSION</span> <span class="mf">3.17</span><span class="p">)</span>
+<span class="n">project</span><span class="p">(</span><span class="n">dll</span><span class="p">)</span>
+
+<span class="n">set</span><span class="p">(</span><span class="n">CMAKE_CXX_STANDARD</span> <span class="mi">14</span><span class="p">)</span>
+<span class="n">add_library</span><span class="p">(</span><span class="n">dll</span> <span class="n">SHARED</span> <span class="n">main</span><span class="p">.</span><span class="n">cpp</span><span class="p">)</span>
+</code></pre></div><ol start="2">
+<li>dllDemo项目的CMakeLists.txt</li>
+</ol>
+<div class="highlight"><pre class="chroma"><code class="language-c++" data-lang="c++"><span class="n">cmake_minimum_required</span><span class="p">(</span><span class="n">VERSION</span> <span class="mf">3.17</span><span class="p">)</span>
+<span class="n">project</span><span class="p">(</span><span class="n">dllDemo</span><span class="p">)</span>
+
+<span class="n">set</span><span class="p">(</span><span class="n">CMAKE_CXX_STANDARD</span> <span class="mi">14</span><span class="p">)</span>
+<span class="n">link_directories</span><span class="p">(</span><span class="n">lib</span><span class="p">)</span>
+<span class="n">add_executable</span><span class="p">(</span><span class="n">dllDemo</span> <span class="n">main</span><span class="p">.</span><span class="n">cpp</span><span class="p">)</span>
+<span class="n">target_link_libraries</span><span class="p">(</span><span class="n">dllDemo</span> <span class="n">yourDllName</span><span class="p">)</span>
+</code></pre></div><ol start="3">
+<li>
+<p>dllDemo项目新建lib文件夹，并将dll项目生成的.dll文件放进去</p>
+</li>
+<li>
+<p>dllDemo项目的CMake Applocation添加环境变量，名称为PATH，值为lib路径</p>
+<p><img src="https://raw.githubusercontent.com/worshipone/websiteImages/master/20201024155142.png" alt=""  /></p>
+</li>
+</ol>
+<h6 id="243-c语言代码">2.4.3 C语言代码</h6>
+<p>显式调用</p>
+<p>dll：</p>
+<div class="highlight"><pre class="chroma"><code class="language-c++" data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;windows.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;fstream&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="c1">//测试函数
+</span><span class="c1"></span><span class="k">extern</span> <span class="s">&#34;C&#34;</span> <span class="kr">__declspec</span><span class="p">(</span><span class="n">dllexport</span><span class="p">)</span> <span class="kt">void</span> <span class="n">FuncInDll</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+
+<span class="p">{</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&#34;FuncInDll is called!&#34;</span><span class="o">&lt;&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+<span class="p">}</span>
+<span class="c1">//读取文件并且打印
+</span><span class="c1"></span><span class="k">extern</span> <span class="s">&#34;C&#34;</span> <span class="kr">__declspec</span><span class="p">(</span><span class="n">dllexport</span><span class="p">)</span> <span class="kt">void</span> <span class="n">readFile</span><span class="p">(){</span>
+    <span class="n">string</span> <span class="n">filename</span> <span class="o">=</span> <span class="s">&#34;D:</span><span class="se">\\</span><span class="s">Clion</span><span class="se">\\</span><span class="s">ClionProjects</span><span class="se">\\</span><span class="s">MaliciousCode</span><span class="se">\\</span><span class="s">dllDemo</span><span class="se">\\</span><span class="s">demo.txt&#34;</span><span class="p">;</span>
+    <span class="n">ifstream</span> <span class="n">file</span><span class="p">;</span>
+    <span class="n">file</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">lines</span><span class="p">;</span>
+    <span class="n">string</span> <span class="n">line</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">getline</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="n">line</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="n">lines</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">line</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">lines</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>  <span class="c1">//打印数据
+</span><span class="c1"></span>    <span class="p">}</span>
+    <span class="n">file</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">extern</span> <span class="s">&#34;C&#34;</span> <span class="kr">__declspec</span><span class="p">(</span><span class="n">dllexport</span><span class="p">)</span> <span class="kt">void</span> <span class="n">writeFile</span><span class="p">(){</span>
+    <span class="n">string</span> <span class="n">filename</span> <span class="o">=</span> <span class="s">&#34;D:</span><span class="se">\\</span><span class="s">Clion</span><span class="se">\\</span><span class="s">ClionProjects</span><span class="se">\\</span><span class="s">MaliciousCode</span><span class="se">\\</span><span class="s">dllDemo</span><span class="se">\\</span><span class="s">demo.txt&#34;</span><span class="p">;</span>
+    <span class="n">string</span> <span class="n">content</span> <span class="o">=</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">恶意代码分析&#34;</span><span class="p">;</span>
+    <span class="n">ofstream</span> <span class="n">file</span><span class="p">;</span>
+    <span class="n">file</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ios</span><span class="o">::</span><span class="n">app</span><span class="p">);</span>
+    <span class="n">file</span> <span class="o">&lt;&lt;</span> <span class="n">content</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+    <span class="n">file</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="n">BOOL</span> <span class="n">APIENTRY</span> <span class="nf">DllMain</span><span class="p">(</span><span class="n">HANDLE</span> <span class="n">hModule</span><span class="p">,</span> <span class="n">DWORD</span> <span class="n">dwReason</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">lpReserved</span><span class="p">)</span>
+
+<span class="p">{</span>
+
+    <span class="n">HANDLE</span> <span class="n">g_hModule</span><span class="p">;</span>
+
+    <span class="k">switch</span><span class="p">(</span><span class="n">dwReason</span><span class="p">)</span>
+
+    <span class="p">{</span>
+
+    <span class="k">case</span> <span class="nl">DLL_PROCESS_ATTACH</span><span class="p">:</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&#34;Dll is attached!&#34;</span><span class="o">&lt;&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">MessageBox</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="s">&#34;The dll has been loaded!&#34;</span><span class="p">,</span><span class="s">&#34;dllLoad&#34;</span><span class="p">,</span><span class="n">MB_OK</span><span class="p">);</span>
+
+    <span class="n">g_hModule</span> <span class="o">=</span> <span class="p">(</span><span class="n">HINSTANCE</span><span class="p">)</span><span class="n">hModule</span><span class="p">;</span>
+
+    <span class="k">break</span><span class="p">;</span>
+
+    <span class="k">case</span> <span class="nl">DLL_PROCESS_DETACH</span><span class="p">:</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&#34;Dll is detached!&#34;</span><span class="o">&lt;&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+    <span class="n">g_hModule</span><span class="o">=</span><span class="nb">NULL</span><span class="p">;</span>
+
+    <span class="k">break</span><span class="p">;</span>
+
+<span class="p">}</span>
+
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div><p>dllDemo：</p>
+<div class="highlight"><pre class="chroma"><code class="language-c++" data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span><span class="cp">#include</span> <span class="cpf">&lt;windows.h&gt;</span><span class="cp">
+</span><span class="cp"></span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">//定义一个函数指针
+</span><span class="c1"></span>    <span class="k">typedef</span> <span class="kt">void</span> <span class="p">(</span><span class="o">*</span> <span class="n">DLLWITHLIB</span> <span class="p">)(</span><span class="kt">void</span><span class="p">);</span>
+
+    <span class="c1">//定义一个函数指针变量
+</span><span class="c1"></span>    <span class="n">DLLWITHLIB</span> <span class="n">pfFuncInDll</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="n">DLLWITHLIB</span> <span class="n">pfReadFile</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="n">DLLWITHLIB</span> <span class="n">pfWriteFile</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="c1">//加载我们的dll
+</span><span class="c1"></span>    <span class="n">HINSTANCE</span> <span class="n">hinst</span><span class="o">=::</span><span class="n">LoadLibrary</span><span class="p">(</span><span class="s">&#34;libdll.dll&#34;</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">!=</span> <span class="n">hinst</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&#34;dll loaded!&#34;</span><span class="o">&lt;&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">//找到dll的FuncInDll函数
+</span><span class="c1"></span>    <span class="n">pfFuncInDll</span> <span class="o">=</span> <span class="p">(</span><span class="n">DLLWITHLIB</span><span class="p">)</span><span class="n">GetProcAddress</span><span class="p">(</span><span class="n">hinst</span><span class="p">,</span> <span class="s">&#34;FuncInDll&#34;</span><span class="p">);</span>
+    <span class="n">pfReadFile</span> <span class="o">=</span> <span class="p">(</span><span class="n">DLLWITHLIB</span><span class="p">)</span><span class="n">GetProcAddress</span><span class="p">(</span><span class="n">hinst</span><span class="p">,</span> <span class="s">&#34;readFile&#34;</span><span class="p">);</span>
+    <span class="n">pfWriteFile</span> <span class="o">=</span> <span class="p">(</span><span class="n">DLLWITHLIB</span><span class="p">)</span><span class="n">GetProcAddress</span><span class="p">(</span><span class="n">hinst</span><span class="p">,</span> <span class="s">&#34;writeFile&#34;</span><span class="p">);</span>
+    <span class="c1">//调用dll里的函数
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">!=</span> <span class="n">pfFuncInDll</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&#34;**********</span><span class="se">\n</span><span class="s">Test function!&#34;</span><span class="o">&lt;&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="p">(</span><span class="o">*</span><span class="n">pfFuncInDll</span><span class="p">)();</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">!=</span> <span class="n">pfReadFile</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&#34;**********</span><span class="se">\n</span><span class="s">Read file and print it!&#34;</span><span class="o">&lt;&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="p">(</span><span class="o">*</span><span class="n">pfReadFile</span><span class="p">)();</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">!=</span> <span class="n">pfWriteFile</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&#34;**********</span><span class="se">\n</span><span class="s">Write file!&#34;</span><span class="o">&lt;&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="p">(</span><span class="o">*</span><span class="n">pfWriteFile</span><span class="p">)();</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><h6 id="234-实验结果">2.3.4 实验结果</h6>
+<p>弹窗</p>
+<p><img src="https://raw.githubusercontent.com/worshipone/websiteImages/master/20201024171115.png" alt=""  /></p>
+<p>终端内容</p>
+<p><img src="https://raw.githubusercontent.com/worshipone/websiteImages/master/20201024171518.png" alt=""  /></p>
+<p>原始demo.txt的内容</p>
+<div class="highlight"><pre class="chroma"><code class="language-c++" data-lang="c++"><span class="err">编写一个</span><span class="n">DLL</span><span class="err">，使得在动态加载该</span><span class="n">DLL时</span><span class="err">，能够弹出“目标</span><span class="n">DLL已加载</span><span class="err">”的对话框。</span>
+<span class="err">同时，为</span><span class="n">DLL添加两个导出函数</span><span class="err">，分别实现读取文件并打印出来，以及写入文件的功能，并且能够被其他程序动态调用。</span>
+</code></pre></div><p>运行dllDemo后demo.txt的内容（追加了“恶意代码分析”）</p>
+<div class="highlight"><pre class="chroma"><code class="language-c++" data-lang="c++"><span class="err">编写一个</span><span class="n">DLL</span><span class="err">，使得在动态加载该</span><span class="n">DLL时</span><span class="err">，能够弹出“目标</span><span class="n">DLL已加载</span><span class="err">”的对话框。</span>
+<span class="err">同时，为</span><span class="n">DLL添加两个导出函数</span><span class="err">，分别实现读取文件并打印出来，以及写入文件的功能，并且能够被其他程序动态调用。</span>
+
+<span class="err">恶意代码分析</span>
+</code></pre></div><h4 id="3--简单多线程服务器">3.  简单多线程服务器</h4>
 <h5 id="31-实验要求">3.1 实验要求</h5>
 <p>编写一个简单的echo服务器程序（即：客户端与服务器建立连接后，在客户端输入消息，服务器端就会打印输入的消息），在4444端口进行监听。每有一个客户端进行连接时候，服务器创建一个子线程，对客户端程序进行服务。根据要求，客户端代码也需要自行编写。</p>
 <h5 id="32-实验环境">3.2 实验环境</h5>
@@ -303,6 +466,318 @@
 <h5 id="33-实验目的">3.3 实验目的</h5>
 <p>了解恶意代码在通信时，会使用到的最基本的技术。练习多线程编程。</p>
 <h5 id="34-实验过程">3.4 实验过程</h5>
+<h6 id="341-实验原理">3.4.1 实验原理</h6>
+<p>具体内容在网络空间安全产品开发实践中详细学过</p>
+<p><img src="https://raw.githubusercontent.com/worshipone/websiteImages/master/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%A8%A1%E5%9E%8B.png" alt=""  /></p>
+<h6 id="342-c语言代码">3.4.2 C语言代码</h6>
+<p>tcpserver端</p>
+<div class="highlight"><pre class="chroma"><code class="language-c++" data-lang="c++"><span class="cp">#include</span><span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;sys/socket.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;netdb.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;netinet/in.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;arpa/inet.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
+</span><span class="cp">#define PORT 8900
+</span><span class="cp">#define BUF_SIZE 2048
+</span><span class="cp"></span>
+<span class="kt">int</span> <span class="nf">execute</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span> <span class="n">command</span><span class="p">,</span><span class="kt">char</span><span class="o">*</span> <span class="n">buf</span><span class="p">);</span>
+<span class="kt">int</span> <span class="nf">process</span><span class="p">(</span><span class="kt">int</span> <span class="n">connected</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">sockaddr_in</span> <span class="n">client</span><span class="p">);</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="k">struct</span> <span class="nc">a</span><span class="p">{</span>
+	<span class="kt">int</span> <span class="n">connected</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="nc">sockaddr_in</span> <span class="n">client</span><span class="p">;</span>
+	<span class="p">}</span><span class="n">b</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">sockfd</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="nc">sockaddr_in</span> <span class="n">client</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="nc">sockaddr_in</span> <span class="n">server</span><span class="p">;</span>
+	<span class="kt">char</span> <span class="n">send_buf</span><span class="p">[</span><span class="n">BUF_SIZE</span><span class="p">];</span>
+	<span class="kt">char</span> <span class="n">recv_buf</span><span class="p">[</span><span class="n">BUF_SIZE</span><span class="p">];</span>
+	<span class="kt">char</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">2048</span><span class="p">];</span>
+	<span class="kt">int</span> <span class="n">sendnum</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">recvnum</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">length</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">port</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">connected</span><span class="p">;</span>	<span class="c1">//change
+</span><span class="c1"></span>	<span class="kt">int</span> <span class="n">err</span><span class="p">;</span>
+    <span class="n">pthread_t</span> <span class="kr">thread</span><span class="p">;</span>
+    <span class="n">pthread_attr_t</span> <span class="n">attr</span><span class="p">;</span>
+	<span class="c1">//添加多线程e
+</span><span class="c1"></span>	<span class="n">port</span> <span class="o">=</span> <span class="n">PORT</span><span class="p">;</span>
+	
+	<span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span><span class="p">(</span><span class="n">sockfd</span><span class="o">=</span><span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span><span class="n">SOCK_STREAM</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>  <span class="c1">//change
+</span><span class="c1"></span>	<span class="p">{</span>
+		<span class="n">perror</span><span class="p">(</span><span class="s">&#34;generating socket error</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+	<span class="p">}</span>
+
+	<span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">server</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="nc">sockaddr_in</span><span class="p">));</span>
+	<span class="n">server</span><span class="p">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span>
+	<span class="n">server</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">htonl</span><span class="p">(</span><span class="n">INADDR_ANY</span><span class="p">);</span>
+	<span class="n">server</span><span class="p">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="n">port</span><span class="p">);</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span><span class="n">bind</span><span class="p">(</span><span class="n">sockfd</span><span class="p">,(</span><span class="k">struct</span> <span class="nc">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">server</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="nc">sockaddr</span><span class="p">)))</span>
+	<span class="p">{</span>
+		<span class="n">perror</span><span class="p">(</span><span class="s">&#34;binding error</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+		<span class="n">close</span><span class="p">(</span><span class="n">sockfd</span><span class="p">);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span><span class="n">listen</span><span class="p">(</span><span class="n">sockfd</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+	<span class="p">{</span>
+		<span class="n">perror</span><span class="p">(</span><span class="s">&#34;listen socket error</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+		<span class="n">close</span><span class="p">(</span><span class="n">sockfd</span><span class="p">);</span>
+		<span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+	<span class="p">}</span>
+	
+	<span class="n">length</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="nc">sockaddr_in</span><span class="p">);</span>
+
+	<span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="k">if</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span><span class="p">(</span><span class="n">connected</span><span class="o">=</span><span class="n">accept</span><span class="p">(</span><span class="n">sockfd</span><span class="p">,(</span><span class="k">struct</span> <span class="nc">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">client</span><span class="p">,</span><span class="o">&amp;</span><span class="n">length</span><span class="p">)))</span>
+		<span class="p">{</span>
+			<span class="n">perror</span><span class="p">(</span><span class="s">&#34;three shakehands error</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+			<span class="n">close</span><span class="p">(</span><span class="n">sockfd</span><span class="p">);</span>
+			<span class="k">continue</span><span class="p">;</span>
+		<span class="p">}</span>
+		<span class="n">memset</span><span class="p">(</span><span class="n">send_buf</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">);</span>
+		<span class="n">memset</span><span class="p">(</span><span class="n">recv_buf</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">);</span>
+		<span class="n">memset</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">);</span>  
+		<span class="kt">int</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+		<span class="k">if</span><span class="p">((</span><span class="n">pid</span><span class="o">=</span><span class="n">fork</span><span class="p">())</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)</span>
+		<span class="p">{</span>
+			<span class="n">printf</span><span class="p">(</span><span class="s">&#34;fork failed</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+			<span class="n">_exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+		<span class="p">}</span>
+		<span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="n">pid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="p">{</span>
+			<span class="c1">//close(connected);
+</span><span class="c1"></span>			<span class="n">process</span><span class="p">(</span><span class="n">connected</span><span class="p">,</span> <span class="n">client</span><span class="p">);</span>
+		<span class="p">}</span>
+		<span class="k">else</span>
+		<span class="p">{</span>
+			<span class="n">close</span><span class="p">(</span><span class="n">connected</span><span class="p">);</span>
+			<span class="k">continue</span><span class="p">;</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="n">close</span><span class="p">(</span><span class="n">sockfd</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">process</span><span class="p">(</span><span class="kt">int</span> <span class="n">connected</span><span class="p">,</span> <span class="k">struct</span> <span class="nc">sockaddr_in</span> <span class="n">client</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="kt">char</span> <span class="n">sendbuf</span><span class="p">[</span><span class="n">BUF_SIZE</span><span class="p">];</span>
+	<span class="kt">char</span> <span class="n">recvbuf</span><span class="p">[</span><span class="n">BUF_SIZE</span><span class="p">];</span>
+	<span class="kt">int</span> <span class="n">sendnum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">recvnum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">cnt</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="n">fd</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+	<span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="nc">sockaddr_in</span><span class="p">);</span>
+	<span class="kt">char</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+	<span class="kt">char</span> <span class="n">path</span><span class="p">[</span><span class="mi">2048</span><span class="p">];</span>
+	<span class="n">pid_t</span> <span class="n">pid</span><span class="p">;</span>
+	<span class="n">memset</span><span class="p">(</span><span class="n">sendbuf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">BUF_SIZE</span><span class="p">);</span>
+	<span class="n">memset</span><span class="p">(</span><span class="n">recvbuf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">BUF_SIZE</span><span class="p">);</span>
+	
+	<span class="k">if</span><span class="p">(</span><span class="n">pipe</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)</span>
+		<span class="n">printf</span><span class="p">(</span><span class="s">&#34;creat pipe error </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+		
+	<span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="k">if</span><span class="p">(</span><span class="mi">0</span><span class="o">&gt;=</span><span class="p">(</span><span class="n">recvnum</span><span class="o">=</span><span class="n">recv</span><span class="p">(</span><span class="n">connected</span><span class="p">,</span> <span class="n">recvbuf</span><span class="p">,</span> <span class="n">BUF_SIZE</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
+		<span class="p">{</span>
+			<span class="n">perror</span><span class="p">(</span><span class="s">&#34;recv error</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+			<span class="n">close</span><span class="p">(</span><span class="n">connected</span><span class="p">);</span>
+			<span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+		<span class="p">}</span>
+		
+		<span class="n">recvbuf</span><span class="p">[</span><span class="n">recvnum</span><span class="p">]</span><span class="o">=</span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+		<span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&#34;the command is:%s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">recvbuf</span><span class="p">);</span>
+		
+		<span class="k">if</span><span class="p">(</span><span class="mi">0</span><span class="o">==</span><span class="n">strcmp</span><span class="p">(</span><span class="n">recvbuf</span><span class="p">,</span> <span class="s">&#34;quit&#34;</span><span class="p">))</span>
+		<span class="p">{</span>
+			<span class="n">perror</span><span class="p">(</span><span class="s">&#34;quitting remote controling</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+                        <span class="n">close</span><span class="p">(</span><span class="n">connected</span><span class="p">);</span>
+                        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>	
+		<span class="p">}</span>
+		
+		<span class="n">strcpy</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="s">&#34;/bin/&#34;</span><span class="p">);</span>
+                <span class="n">strcat</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">recvbuf</span><span class="p">);</span>
+                <span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">sendbuf</span><span class="p">);</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="sc">&#39;\0&#39;</span><span class="o">==*</span><span class="n">sendbuf</span><span class="p">)</span>
+                <span class="p">{</span>
+                	<span class="n">memset</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="n">cmd</span><span class="p">));</span>
+                        <span class="n">strcpy</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="s">&#34;/sbin/&#34;</span><span class="p">);</span>
+                        <span class="n">strcat</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">recvbuf</span><span class="p">);</span>
+                        <span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">sendbuf</span><span class="p">);</span>
+                        
+                        <span class="k">if</span> <span class="p">(</span><span class="sc">&#39;\0&#39;</span><span class="o">==*</span><span class="n">sendbuf</span><span class="p">)</span>
+                        <span class="p">{</span>       
+                                <span class="n">memset</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="n">cmd</span><span class="p">));</span>
+                                <span class="n">strcpy</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="s">&#34;/usr/bin/&#34;</span><span class="p">);</span>
+                                <span class="n">strcat</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">recvbuf</span><span class="p">);</span>
+                                <span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">sendbuf</span><span class="p">);</span>
+                        <span class="p">}</span>
+                        
+                        <span class="k">if</span> <span class="p">(</span><span class="sc">&#39;\0&#39;</span><span class="o">==*</span><span class="n">sendbuf</span><span class="p">)</span>
+                        <span class="p">{</span>       
+                                <span class="n">memset</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="n">cmd</span><span class="p">));</span>
+                                <span class="n">strcpy</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="s">&#34;/usr/sbin/&#34;</span><span class="p">);</span>
+                                <span class="n">strcat</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">recvbuf</span><span class="p">);</span>
+                                <span class="n">execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">sendbuf</span><span class="p">);</span>
+                        <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="k">if</span> <span class="p">(</span><span class="sc">&#39;\0&#39;</span><span class="o">==*</span><span class="n">sendbuf</span><span class="p">)</span>
+                        <span class="n">sprintf</span><span class="p">(</span><span class="n">sendbuf</span><span class="p">,</span><span class="s">&#34;command is not vaild,check it please</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+
+                <span class="n">printf</span><span class="p">(</span><span class="s">&#34;%s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">sendbuf</span><span class="p">);</span>
+			
+		<span class="n">sendnum</span> <span class="o">=</span> <span class="n">send</span><span class="p">(</span><span class="n">connected</span><span class="p">,</span><span class="n">sendbuf</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="n">sendbuf</span><span class="p">),</span><span class="mi">0</span><span class="p">);</span>
+                <span class="k">if</span> <span class="p">(</span><span class="mi">0</span><span class="o">&gt;</span><span class="n">sendnum</span><span class="p">)</span>
+                <span class="p">{</span>
+                        <span class="n">perror</span><span class="p">(</span><span class="s">&#34;sending data error</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+                        <span class="k">continue</span><span class="p">;</span>
+                <span class="p">}</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">execute</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span> <span class="n">command</span><span class="p">,</span><span class="kt">char</span><span class="o">*</span> <span class="n">buf</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="n">FILE</span> <span class="o">*</span> 	<span class="n">fp</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">count</span><span class="p">;</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span><span class="o">==</span><span class="p">(</span><span class="n">fp</span> <span class="o">=</span> <span class="n">popen</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="s">&#34;r&#34;</span><span class="p">)))</span>
+	<span class="p">{</span>
+		<span class="n">perror</span><span class="p">(</span><span class="s">&#34;creating pipe error</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+	<span class="p">}</span>
+	
+	<span class="n">count</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span>
+
+	<span class="k">while</span><span class="p">(((</span><span class="n">buf</span><span class="p">[</span><span class="n">count</span><span class="p">]</span> <span class="o">=</span> <span class="n">fgetc</span><span class="p">(</span><span class="n">fp</span><span class="p">))</span><span class="o">!=</span><span class="n">EOF</span><span class="p">)</span><span class="o">&amp;&amp;</span><span class="n">count</span><span class="o">&lt;</span><span class="mi">2047</span><span class="p">)</span>
+		<span class="n">count</span><span class="o">++</span><span class="p">;</span>
+	
+	<span class="n">buf</span><span class="p">[</span><span class="n">count</span><span class="p">]</span><span class="o">=</span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+
+	<span class="n">pclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+
+	<span class="k">if</span><span class="p">(</span><span class="mi">0</span><span class="o">==</span><span class="n">count</span><span class="p">)</span>   <span class="c1">//change
+</span><span class="c1"></span>		<span class="n">printf</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="s">&#34;%s cannot execute</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">command</span><span class="p">);</span>
+
+	<span class="k">return</span> <span class="n">count</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>tcpclient端</p>
+<div class="highlight"><pre class="chroma"><code class="language-c++" data-lang="c++"><span class="cp">#include</span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;sys/socket.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;netdb.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;netinet/in.h&gt;</span><span class="cp">
+</span><span class="cp">#include</span><span class="cpf">&lt;arpa/inet.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="cp">#define PORT 8900
+</span><span class="cp">#define BUF_SIZE 2048
+</span><span class="cp"></span>
+<span class="kt">void</span> <span class="nf">print_usage</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span> <span class="n">str</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">&#34;%s usage :</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">str</span><span class="p">);</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">&#34;%s Ipaddr </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="kt">int</span> <span class="n">sockfd</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="nc">sockaddr_in</span> <span class="n">client</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="nc">sockaddr_in</span> <span class="n">server</span><span class="p">;</span>
+	<span class="kt">char</span> <span class="n">send_buf</span><span class="p">[</span><span class="n">BUF_SIZE</span><span class="p">];</span>
+	<span class="kt">char</span> <span class="n">recv_buf</span><span class="p">[</span><span class="n">BUF_SIZE</span><span class="p">];</span>  
+	<span class="kt">int</span> <span class="n">sendnum</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">recvnum</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">length</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">port</span><span class="p">;</span>
+
+
+	<span class="k">if</span><span class="p">(</span><span class="mi">2</span><span class="o">!=</span><span class="n">argc</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">print_usage</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>	
+	<span class="p">}</span>
+	
+	<span class="n">memset</span><span class="p">(</span><span class="n">send_buf</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">);</span>
+	<span class="n">memset</span><span class="p">(</span><span class="n">recv_buf</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">);</span>
+	<span class="n">port</span> <span class="o">=</span> <span class="n">PORT</span><span class="p">;</span>
+	
+	<span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span><span class="p">(</span><span class="n">sockfd</span><span class="o">=</span><span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span><span class="n">SOCK_STREAM</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>  <span class="c1">// change
+</span><span class="c1"></span>	<span class="p">{</span>
+		<span class="n">perror</span><span class="p">(</span><span class="s">&#34;generating socket error</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+		<span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+	<span class="p">}</span>	
+
+	<span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">server</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="nc">sockaddr_in</span><span class="p">));</span>    <span class="c1">//change
+</span><span class="c1"></span>	<span class="n">server</span><span class="p">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span>
+	<span class="n">server</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">inet_addr</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+	<span class="n">server</span><span class="p">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="n">port</span><span class="p">);</span>
+
+	<span class="k">if</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">==</span><span class="n">connect</span><span class="p">(</span><span class="n">sockfd</span><span class="p">,</span> <span class="p">(</span><span class="k">struct</span> <span class="nc">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">server</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">server</span><span class="p">)))</span>  <span class="c1">//change
+</span><span class="c1"></span>	<span class="p">{</span>
+		<span class="n">perror</span><span class="p">(</span><span class="s">&#34;connect error</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+		<span class="n">close</span><span class="p">(</span><span class="n">sockfd</span><span class="p">);</span>
+		<span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+	<span class="p">}</span>
+ 		
+	<span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">{</span>
+		<span class="n">memset</span><span class="p">(</span><span class="n">send_buf</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">);</span>
+        	<span class="n">memset</span><span class="p">(</span><span class="n">recv_buf</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2048</span><span class="p">);</span>
+
+		<span class="n">printf</span><span class="p">(</span><span class="s">&#34;tcp&gt;&#34;</span><span class="p">);</span>   <span class="c1">//change
+</span><span class="c1"></span>		<span class="n">gets</span><span class="p">(</span><span class="n">send_buf</span><span class="p">);</span>  <span class="c1">//change   Don&#39;t use &#39;fgets&#39;!!!!!!!!!!!!
+</span><span class="c1"></span>		<span class="n">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+		
+		<span class="k">if</span> <span class="p">(</span><span class="mi">0</span><span class="o">&gt;</span><span class="n">send</span><span class="p">(</span><span class="n">sockfd</span><span class="p">,</span><span class="n">send_buf</span><span class="p">,</span><span class="n">strlen</span><span class="p">(</span><span class="n">send_buf</span><span class="p">),</span><span class="mi">0</span><span class="p">))</span>  <span class="c1">//change
+</span><span class="c1"></span>		<span class="p">{</span>
+			<span class="n">perror</span><span class="p">(</span><span class="s">&#34;error occar in sending data</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+			<span class="k">break</span><span class="p">;</span>
+		<span class="p">}</span>
+
+		<span class="k">if</span> <span class="p">(</span><span class="mi">0</span><span class="o">==</span><span class="n">strcmp</span><span class="p">(</span><span class="n">send_buf</span><span class="p">,</span><span class="s">&#34;quit&#34;</span><span class="p">))</span>
+		<span class="p">{</span>
+			<span class="n">printf</span><span class="p">(</span><span class="s">&#34;quit...</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>     <span class="c1">//change
+</span><span class="c1"></span>			<span class="k">break</span><span class="p">;</span>
+		<span class="p">}</span>
+	
+		<span class="n">length</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="nc">sockaddr</span><span class="p">);</span>
+		<span class="n">recvnum</span> <span class="o">=</span> <span class="n">recv</span><span class="p">(</span><span class="n">sockfd</span><span class="p">,</span><span class="n">recv_buf</span><span class="p">,</span><span class="mi">2048</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+		<span class="k">if</span><span class="p">(</span><span class="mi">0</span><span class="o">&lt;</span><span class="n">recvnum</span><span class="p">)</span>                          <span class="c1">//change
+</span><span class="c1"></span>		<span class="p">{</span>
+			<span class="n">recv_buf</span><span class="p">[</span><span class="n">recvnum</span><span class="p">]</span><span class="o">=</span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+			<span class="n">printf</span><span class="p">(</span><span class="s">&#34;%s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">recv_buf</span><span class="p">);</span>
+		<span class="p">}</span>
+		<span class="k">else</span><span class="p">{</span>
+			<span class="k">continue</span><span class="p">;</span>
+		<span class="p">}</span>
+		<span class="c1">//printf(&#34;%s\n&#34;,recv_buf);
+</span><span class="c1"></span>	<span class="p">}</span>
+
+	<span class="n">close</span><span class="p">(</span><span class="n">sockfd</span><span class="p">);</span>
+	<span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div><h6 id="343-实验结果">3.4.3 实验结果</h6>
+<p>运行server端</p>
+<p><img src="https://raw.githubusercontent.com/worshipone/websiteImages/master/server.png" alt=""  /></p>
+<p>运行一个client端</p>
+<p><img src="https://raw.githubusercontent.com/worshipone/websiteImages/master/client1.png" alt=""  /></p>
+<p>运行另一个client端</p>
+<p><img src="https://raw.githubusercontent.com/worshipone/websiteImages/master/client2.png" alt=""  /></p>
+<p>参考链接：</p>
+<p><a class="link" href="https://zhuanlan.zhihu.com/p/106747225"  target="_blank" rel="noopener"
+    >clion终端乱码</a></p>
+<p><a class="link" href="https://blog.csdn.net/v2sking/article/details/84495941?utm_medium=distribute.pc_relevant.none-task-blog-title-1&amp;spm=1001.2101.3001.4242"  target="_blank" rel="noopener"
+    >clion配置dll</a></p>
+<p><a class="link" href="http://www.blogjava.net/wxb_nudt/archive/2007/09/11/144371.html"  target="_blank" rel="noopener"
+    >dll编程</a></p>
 
 </section>
 
